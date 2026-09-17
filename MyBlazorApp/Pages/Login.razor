@@ -1,0 +1,72 @@
+@page "/login"
+@layout PlainLayout
+@inject NavigationManager Navigation
+@inject AppStateService AppState
+
+<PageTitle>Sign in — Spending Log</PageTitle>
+
+<div class="auth-page">
+    <button class="menu-toggle" title="Toggle panel" @onclick="ToggleSidebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 3H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M1 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M1 13H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+    </button>
+
+    @if (!sidebarCollapsed)
+    {
+        <aside class="auth-sidebar">
+            <p class="eyebrow">Spending log</p>
+            <h1 class="pitch">Track every dollar, clearly.</h1>
+
+            <div class="preview-list">
+                @foreach (var expense in AppState.Expenses.Take(3))
+                {
+                    <div class="preview-row">
+                        <span>@expense.Item</span>
+                        <span class="preview-cost">@expense.Cost.ToString("$0.00")</span>
+                    </div>
+                }
+                <div class="preview-row preview-total">
+                    <span>Total</span>
+                    <span class="preview-cost">@AppState.Total.ToString("$#,##0.00")</span>
+                </div>
+            </div>
+        </aside>
+    }
+
+    <main class="auth-main">
+        <div class="auth-card">
+            <p class="eyebrow">Welcome back</p>
+            <h2 class="title">Sign in</h2>
+
+            <EditForm Model="@model" OnSubmit="HandleLogin">
+                <div class="field">
+                    <label>Username</label>
+                    <InputText class="field-input" @bind-Value="model.Email" placeholder="your_username" />
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <InputText class="field-input" type="password" @bind-Value="model.Password" placeholder="••••••••" />
+                </div>
+                <button type="submit" class="btn-primary-auth">Sign in</button>
+            </EditForm>
+
+            <p class="switch-line">No account? <a href="/register">Create one</a></p>
+        </div>
+    </main>
+</div>
+
+@code {
+    private LoginModel model = new();
+    private bool sidebarCollapsed = false;
+
+    private void ToggleSidebar() => sidebarCollapsed = !sidebarCollapsed;
+
+    private void HandleLogin()
+    {
+        AppState.Login(model.Email, model.Email);
+        Navigation.NavigateTo("/dashboard");
+    }
+}

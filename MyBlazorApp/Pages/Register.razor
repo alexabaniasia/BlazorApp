@@ -1,0 +1,81 @@
+@page "/register"
+@layout PlainLayout
+@inject NavigationManager Navigation
+@inject AppStateService AppState
+
+<PageTitle>Create account — Spending Log</PageTitle>
+
+<div class="auth-page">
+    <button class="menu-toggle" title="Toggle panel" @onclick="ToggleSidebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 3H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M1 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M1 13H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+    </button>
+
+    @if (!sidebarCollapsed)
+    {
+        <aside class="auth-sidebar">
+            <p class="eyebrow">Spending log</p>
+            <h1 class="pitch">Track every dollar, clearly.</h1>
+
+            <div class="preview-list">
+                @foreach (var expense in AppState.Expenses.Take(3))
+                {
+                    <div class="preview-row">
+                        <span>@expense.Item</span>
+                        <span class="preview-cost">@expense.Cost.ToString("$0.00")</span>
+                    </div>
+                }
+                <div class="preview-row preview-total">
+                    <span>Total</span>
+                    <span class="preview-cost">@AppState.Total.ToString("$#,##0.00")</span>
+                </div>
+            </div>
+        </aside>
+    }
+
+    <main class="auth-main">
+        <div class="auth-card">
+            <p class="eyebrow">Spending log</p>
+            <h2 class="title">Create account</h2>
+
+            <EditForm Model="@model" OnSubmit="HandleRegister">
+                <div class="field">
+                    <label>Full name</label>
+                    <InputText class="field-input" @bind-Value="model.FullName" placeholder="Jane Smith" />
+                </div>
+                <div class="field">
+                    <label>Username</label>
+                    <InputText class="field-input" @bind-Value="model.Username" placeholder="your_username" />
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <InputText class="field-input" type="password" @bind-Value="model.Password" placeholder="Min. 6 characters" />
+                </div>
+                <div class="field">
+                    <label>Confirm password</label>
+                    <InputText class="field-input" type="password" @bind-Value="model.ConfirmPassword" placeholder="••••••••" />
+                </div>
+                <button type="submit" class="btn-primary-auth">Create account</button>
+            </EditForm>
+
+            <p class="switch-line">Already have an account? <a href="/login">Sign in</a></p>
+        </div>
+    </main>
+</div>
+
+@code {
+    private RegisterModel model = new();
+    private bool sidebarCollapsed = true;
+
+    private void ToggleSidebar() => sidebarCollapsed = !sidebarCollapsed;
+
+    private void HandleRegister()
+    {
+        var displayName = string.IsNullOrWhiteSpace(model.Username) ? model.FullName : model.Username;
+        AppState.Login(model.Username, displayName);
+        Navigation.NavigateTo("/dashboard");
+    }
+}

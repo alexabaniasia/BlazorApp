@@ -1,0 +1,100 @@
+@page "/dashboard"
+@page "/"
+@layout PlainLayout
+@inject NavigationManager Navigation
+@inject AppStateService AppState
+@implements IDisposable
+
+<PageTitle>Dashboard — Spending Log</PageTitle>
+
+<div class="dash-page">
+    <header class="dash-header">
+        <div>
+            <p class="eyebrow">Spending log</p>
+            <h1 class="dash-title">Dashboard</h1>
+        </div>
+        <div class="dash-header-right">
+            <div class="dash-total">
+                <p class="eyebrow">Total</p>
+                <p class="total-figure">@AppState.Total.ToString("$#,##0.00")</p>
+            </div>
+            <button class="btn-outline" @onclick="SignOut">Sign out</button>
+        </div>
+    </header>
+
+    <section class="dash-form">
+        <div class="form-field grow">
+            <label>Item</label>
+            <input class="dash-input" placeholder="e.g. Team lunch" @bind="newItem" @bind:event="oninput" />
+        </div>
+        <div class="form-field">
+            <label>Cost ($)</label>
+            <input class="dash-input" type="number" min="0" step="0.01" placeholder="0.00" @bind="newCost" @bind:event="oninput" />
+        </div>
+        <button class="btn-add" @onclick="AddExpense">Add</button>
+    </section>
+
+    <table class="dash-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Date</th>
+                <th class="align-right">Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var expense in AppState.Expenses)
+            {
+                <tr>
+                    <td class="item-cell">@expense.Item</td>
+                    <td class="date-cell">@expense.Date.ToString("MMM d")</td>
+                    <td class="cost-cell align-right">@expense.Cost.ToString("$0.00")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td class="total-label">Total — @AppState.Expenses.Count items</td>
+                <td></td>
+                <td class="total-value align-right">@AppState.Total.ToString("$#,##0.00")</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@code {
+    private string newItem = string.Empty;
+    private string newCost = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        AppState.OnChange += StateHasChanged;
+
+        if (AppState.CurrentUser is null || !AppState.CurrentUser.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private void AddExpense()
+    {
+        if (decimal.TryParse(newCost, out var cost))
+        {
+            AppState.AddExpense(newItem, cost);
+        }
+
+        newItem = string.Empty;
+        newCost = string.Empty;
+    }
+
+    private void SignOut()
+    {
+        AppState.Logout();
+        Navigation.NavigateTo("/login");
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+}
