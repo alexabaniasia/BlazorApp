@@ -7,56 +7,56 @@
 
 <PageTitle>Dashboard — Spending Log</PageTitle>
 
-<div class="dash-page">
-    <header class="dash-header">
+<div class="min-h-screen bg-[#f6f5f8] font-mono px-12 py-10 pb-16 text-[#1c1522]">
+    <header class="flex justify-between items-start pb-5 border-b border-[#e1dee6]">
         <div>
-            <p class="eyebrow">Spending log</p>
-            <h1 class="dash-title">Dashboard</h1>
+            <p class="uppercase tracking-[0.16em] text-[0.68rem] text-[#7a6f91] mb-1.5">Spending log</p>
+            <h1 class="text-2xl font-bold m-0 text-[#16101d]">Dashboard</h1>
         </div>
-        <div class="dash-header-right">
-            <div class="dash-total">
-                <p class="eyebrow">Total</p>
-                <p class="total-figure">@AppState.Total.ToString("$#,##0.00")</p>
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <p class="uppercase tracking-[0.16em] text-[0.68rem] text-[#7a6f91] mb-1.5">Total</p>
+                <p class="text-[1.7rem] font-bold text-[#e8794f] m-0">@AppState.Total.ToString("$#,##0.00")</p>
             </div>
-            <button class="btn-outline" @onclick="SignOut">Sign out</button>
+            <button class="px-4 py-2 bg-transparent border border-[#c9c3d3] rounded-md text-[#4a4056] text-[0.72rem] tracking-[0.08em] uppercase cursor-pointer transition-colors hover:bg-[#ece9f0]" @onclick="SignOut">Sign out</button>
         </div>
     </header>
 
-    <section class="dash-form">
-        <div class="form-field grow">
-            <label>Item</label>
-            <input class="dash-input" placeholder="e.g. Team lunch" @bind="newItem" @bind:event="oninput" />
+    <section class="flex gap-4 items-end my-7 max-w-[720px]">
+        <div class="flex flex-col flex-1">
+            <label class="uppercase tracking-[0.1em] text-[0.65rem] text-[#7a6f91] mb-1.5">Item</label>
+            <input class="px-3.5 py-2.5 bg-[#e9e6ee] border border-[#dad5e1] rounded-md text-[0.88rem] text-[#16101d] w-full placeholder:text-[#a49cb0] focus:outline-none focus:border-[#8f7fb3]" placeholder="e.g. Team lunch" @bind="newItem" @bind:event="oninput" />
         </div>
-        <div class="form-field">
-            <label>Cost ($)</label>
-            <input class="dash-input" type="number" min="0" step="0.01" placeholder="0.00" @bind="newCost" @bind:event="oninput" />
+        <div class="flex flex-col">
+            <label class="uppercase tracking-[0.1em] text-[0.65rem] text-[#7a6f91] mb-1.5">Cost ($)</label>
+            <input class="px-3.5 py-2.5 bg-[#e9e6ee] border border-[#dad5e1] rounded-md text-[0.88rem] text-[#16101d] w-full placeholder:text-[#a49cb0] focus:outline-none focus:border-[#8f7fb3]" type="number" min="0" step="0.01" placeholder="0.00" @bind="newCost" @bind:event="oninput" />
         </div>
-        <button class="btn-add" @onclick="AddExpense">Add</button>
+        <button class="px-6 py-2.5 bg-[#2f1c3d] border-none rounded-md text-white font-semibold text-[0.85rem] cursor-pointer transition-colors hover:bg-[#402854]" @onclick="AddExpense">Add</button>
     </section>
 
-    <table class="dash-table">
+    <table class="w-full max-w-[960px] border-collapse">
         <thead>
             <tr>
-                <th>Item</th>
-                <th>Date</th>
-                <th class="align-right">Cost</th>
+                <th class="text-left uppercase tracking-[0.1em] text-[0.65rem] text-[#7a6f91] font-medium py-2.5 border-b border-[#d9d5e0]">Item</th>
+                <th class="text-left uppercase tracking-[0.1em] text-[0.65rem] text-[#7a6f91] font-medium py-2.5 border-b border-[#d9d5e0]">Date</th>
+                <th class="text-right uppercase tracking-[0.1em] text-[0.65rem] text-[#7a6f91] font-medium py-2.5 border-b border-[#d9d5e0]">Cost</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var expense in AppState.Expenses)
             {
                 <tr>
-                    <td class="item-cell">@expense.Item</td>
-                    <td class="date-cell">@expense.Date.ToString("MMM d")</td>
-                    <td class="cost-cell align-right">@expense.Cost.ToString("$0.00")</td>
+                    <td class="font-semibold text-[#16101d] py-4 border-b border-[#eae7ee] text-[0.88rem]">@expense.Item</td>
+                    <td class="text-[#8a7f9c] py-4 border-b border-[#eae7ee] text-[0.88rem]">@expense.Date.ToString("MMM d")</td>
+                    <td class="font-semibold text-[#16101d] text-right py-4 border-b border-[#eae7ee] text-[0.88rem]">@expense.Cost.ToString("$0.00")</td>
                 </tr>
             }
         </tbody>
         <tfoot>
             <tr>
-                <td class="total-label">Total — @AppState.Expenses.Count items</td>
-                <td></td>
-                <td class="total-value align-right">@AppState.Total.ToString("$#,##0.00")</td>
+                <td class="uppercase tracking-[0.08em] text-[0.72rem] font-bold text-[#16101d] pt-4 border-t-2 border-[#16101d]">Total — @AppState.Expenses.Count items</td>
+                <td class="pt-4 border-t-2 border-[#16101d]"></td>
+                <td class="text-[1.15rem] font-bold text-[#e8794f] text-right pt-4 border-t-2 border-[#16101d]">@AppState.Total.ToString("$#,##0.00")</td>
             </tr>
         </tfoot>
     </table>
