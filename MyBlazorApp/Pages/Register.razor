@@ -5,37 +5,7 @@
 
 <PageTitle>Create account — Spending Log</PageTitle>
 
-<div class="auth-page">
-    <button class="menu-toggle" title="Toggle panel" @onclick="ToggleSidebar">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 3H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M1 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M1 13H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-        </svg>
-    </button>
-
-    @if (!sidebarCollapsed)
-    {
-        <aside class="auth-sidebar">
-            <p class="eyebrow">Spending log</p>
-            <h1 class="pitch">Track every dollar, clearly.</h1>
-
-            <div class="preview-list">
-                @foreach (var expense in AppState.Expenses.Take(3))
-                {
-                    <div class="preview-row">
-                        <span>@expense.Item</span>
-                        <span class="preview-cost">@expense.Cost.ToString("$0.00")</span>
-                    </div>
-                }
-                <div class="preview-row preview-total">
-                    <span>Total</span>
-                    <span class="preview-cost">@AppState.Total.ToString("$#,##0.00")</span>
-                </div>
-            </div>
-        </aside>
-    }
-
+<div class="flex min-h-screen font-mono">
     <main class="flex flex-1 items-center justify-center bg-[#120c19] p-10">
         <div class="w-full max-w-sm">
             <p class="mb-2.5 text-[0.7rem] uppercase tracking-[0.18em] text-[#b09fc9]">Spending log</p>
@@ -74,9 +44,6 @@
     private const string ButtonClass = "mt-2 w-full cursor-pointer rounded-lg bg-[#ee8e63] py-[13px] text-[0.95rem] font-bold text-[#1a1020] transition-colors hover:bg-[#f2a67e]";
 
     private RegisterModel model = new();
-    private bool sidebarCollapsed = true;
-
-    private void ToggleSidebar() => sidebarCollapsed = !sidebarCollapsed;
 
     private void HandleRegister()
     {

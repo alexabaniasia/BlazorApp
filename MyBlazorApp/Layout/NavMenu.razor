@@ -1,27 +1,37 @@
-﻿<div class="h-14 flex items-center px-6 bg-[#170d1f] border-b border-[#362a44]">
-    <a class="text-lg font-bold text-white no-underline tracking-wide" href="">SpendingLog</a>
-</div>
+﻿<button title="Toggle navigation"
+        class="fixed left-4 top-4 z-30 flex h-10 w-10 items-center justify-center rounded-md border border-[#e8794f] bg-[#170d1f] text-[#e8794f] md:hidden"
+        @onclick="ToggleMenu">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 3H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        <path d="M1 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        <path d="M1 13H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+    </svg>
+</button>
 
-<div class="py-5">
-    <nav class="flex flex-col gap-2 px-3">
-        <NavLink class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#d8cfe3] transition-colors hover:bg-[#2c1738] hover:text-white [&.active]:bg-[#ee8e63] [&.active]:text-[#1a1020]" href="" Match="NavLinkMatch.All">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            Dashboard
-        </NavLink>
+<aside class="@SidebarClass">
+    <div class="px-6 pb-8 pt-10">
+        <p class="mb-2.5 text-[0.7rem] uppercase tracking-[0.18em] text-[#b09fc9]">Spending log</p>
+        <p class="text-xl font-bold leading-tight text-white">Track every dollar, clearly.</p>
+    </div>
 
-        <NavLink class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#d8cfe3] transition-colors hover:bg-[#2c1738] hover:text-white [&.active]:bg-[#ee8e63] [&.active]:text-[#1a1020]" href="login">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-            Login
-        </NavLink>
-
-        <NavLink class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#d8cfe3] transition-colors hover:bg-[#2c1738] hover:text-white [&.active]:bg-[#ee8e63] [&.active]:text-[#1a1020]" href="register">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-            Register
-        </NavLink>
+    <nav class="flex flex-col gap-1 px-3" @onclick="CloseMenu">
+        <NavLink class="@LinkClass" ActiveClass="@ActiveLinkClass" href="dashboard">Dashboard</NavLink>
+        <NavLink class="@LinkClass" ActiveClass="@ActiveLinkClass" href="counter">Counter</NavLink>
+        <NavLink class="@LinkClass" ActiveClass="@ActiveLinkClass" href="weather">Weather</NavLink>
     </nav>
-</div>
+</aside>
 
 @code {
-    // We no longer need the toggle logic since the Tailwind layout is responsive/fixed
-    // But we keep the block empty so Blazor doesn't complain if you had logic here.
+    private const string LinkClass = "rounded-md px-3 py-2.5 text-sm text-[#b09fc9] transition-colors hover:bg-white/5 hover:text-white";
+    private const string ActiveLinkClass = "bg-[#e8794f]/[0.15] text-white";
+
+    private bool open;
+
+    private string SidebarClass =>
+        "fixed inset-y-0 left-0 z-20 w-60 shrink-0 bg-gradient-to-b from-[#3a1f4d] via-[#2c1738] to-[#170d1f] " +
+        "transition-transform md:static md:translate-x-0 " +
+        (open ? "translate-x-0" : "-translate-x-full");
+
+    private void ToggleMenu() => open = !open;
+    private void CloseMenu() => open = false;
 }
