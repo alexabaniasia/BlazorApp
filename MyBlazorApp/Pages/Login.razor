@@ -36,29 +36,35 @@
         </aside>
     }
 
-    <main class="auth-main">
-        <div class="auth-card">
-            <p class="eyebrow">Welcome back</p>
-            <h2 class="title">Sign in</h2>
+    <main class="flex flex-1 items-center justify-center bg-[#120c19] p-10">
+        <div class="w-full max-w-sm">
+            <p class="mb-2.5 text-[0.7rem] uppercase tracking-[0.18em] text-[#b09fc9]">Welcome back</p>
+            <h2 class="mb-8 mt-1 text-[2rem] font-bold text-white">Sign in</h2>
 
             <EditForm Model="@model" OnSubmit="HandleLogin">
-                <div class="field">
-                    <label>Username</label>
-                    <InputText class="field-input" @bind-Value="model.Email" placeholder="your_username" />
+                <div class="mb-5">
+                    <label class="@LabelClass">Username</label>
+                    <InputText class="@InputClass" @bind-Value="model.Email" placeholder="your_username" />
                 </div>
-                <div class="field">
-                    <label>Password</label>
-                    <InputText class="field-input" type="password" @bind-Value="model.Password" placeholder="••••••••" />
+                <div class="mb-5">
+                    <label class="@LabelClass">Password</label>
+                    <InputText class="@InputClass" type="password" @bind-Value="model.Password" placeholder="••••••••" />
                 </div>
-                <button type="submit" class="btn-primary-auth">Sign in</button>
+                <button type="submit" class="@ButtonClass">Sign in</button>
             </EditForm>
 
-            <p class="switch-line">No account? <a href="/register">Create one</a></p>
+            <p class="mt-5 text-center text-[0.82rem] text-[#9285a3]">
+                No account? <a class="text-[#b9a6e0] underline" href="/register">Create one</a>
+            </p>
         </div>
     </main>
 </div>
 
 @code {
+    private const string LabelClass = "mb-2 block text-[0.68rem] uppercase tracking-[0.14em] text-[#a996d1]";
+    private const string InputClass = "w-full rounded-lg border border-[#362a44] bg-[#1c1524] px-3.5 py-3 text-sm text-[#f2eef7] placeholder:text-[#5f5670] focus:border-[#e8794f] focus:outline-none";
+    private const string ButtonClass = "mt-2 w-full cursor-pointer rounded-lg bg-[#ee8e63] py-[13px] text-[0.95rem] font-bold text-[#1a1020] transition-colors hover:bg-[#f2a67e]";
+
     private LoginModel model = new();
     private bool sidebarCollapsed = false;
 
