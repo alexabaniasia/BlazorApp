@@ -1,0 +1,206 @@
+@page "/feedback"
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject AppStateService AppState
+
+<PageTitle>Feedback — Spending Log</PageTitle>
+
+<div class="px-6 pb-16 pt-16 md:px-12 md:pt-10">
+    <header class="border-b border-[#e1dee6] pb-5">
+        <p class="@EyebrowClass">Spending log</p>
+        <h1 class="text-[2rem] font-bold text-[#16101d]">Feedback</h1>
+        <p class="mt-1 max-w-xl text-[0.88rem] text-[#7a6f91]">
+            Rate the app and tell us what works and what doesn't.
+        </p>
+    </header>
+
+    <div class="mt-8 grid max-w-[1000px] gap-10 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+
+        <!-- Rating + comment form -->
+        <section>
+            <div class="mb-6">
+                <label class="@LabelClass">Your rating</label>
+                <div class="flex items-center gap-1" @onmouseleave="() => hoverRating = 0" role="radiogroup" aria-label="Rating">
+                    @foreach (var star in Enumerable.Range(1, 5))
+                    {
+                        var current = star;
+                        <button type="button"
+                                role="radio"
+                                aria-checked="@(rating == current)"
+                                aria-label="@current star@(current > 1 ? "s" : "")"
+                                class="cursor-pointer rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8f7fb3]"
+                                @onclick="() => SetRating(current)"
+                                @onmouseover="() => hoverRating = current">
+                            <svg width="34" height="34" viewBox="0 0 24 24"
+                                 class="@(current <= DisplayedRating ? "fill-[#e8794f] stroke-[#e8794f]" : "fill-transparent stroke-[#c9c3d3]")"
+                                 stroke-width="1.5" stroke-linejoin="round">
+                                <path d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95L12 2.5z" />
+                            </svg>
+                        </button>
+                    }
+                    <span class="ml-3 text-[0.85rem] text-[#4a4056]">@RatingLabel</span>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="@LabelClass" for="reviewer-name">Name (optional)</label>
+                <input id="reviewer-name" class="@InputClass" placeholder="Anonymous" maxlength="40" @bind="name" @bind:event="oninput" />
+            </div>
+
+            <div class="mb-2">
+                <label class="@LabelClass" for="review-comment">Comment</label>
+                <textarea id="review-comment"
+                          rows="5"
+                          maxlength="@MaxComment"
+                          class="@InputClass resize-y"
+                          placeholder="What do you like? What should be better?"
+                          @bind="comment" @bind:event="oninput"></textarea>
+                <p class="mt-1.5 text-right text-[0.7rem] text-[#8a7f9c]">@comment.Length / @MaxComment</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <p class="mb-4 rounded-md border border-[#e8794f]/40 bg-[#e8794f]/10 px-3.5 py-2.5 text-[0.82rem] text-[#a8481f]" role="alert">
+                    @errorMessage
+                </p>
+            }
+            @if (submitted)
+            {
+                <p class="mb-4 rounded-md border border-[#8f7fb3]/40 bg-[#8f7fb3]/10 px-3.5 py-2.5 text-[0.82rem] text-[#4a3670]" role="status">
+                    Thanks, your review was posted.
+                </p>
+            }
+
+            <button class="cursor-pointer rounded-md bg-[#2f1c3d] px-6 py-[11px] text-[0.85rem] font-semibold text-white transition-colors hover:bg-[#402854]"
+                    @onclick="SubmitReview">
+                Post review
+            </button>
+        </section>
+
+        <!-- Summary + reviews -->
+        <section>
+            <div class="flex items-end justify-between border-b border-[#e1dee6] pb-4">
+                <div>
+                    <p class="@EyebrowClass">Average rating</p>
+                    <p class="text-[1.7rem] font-bold text-[#e8794f]">
+                        @(reviews.Count == 0 ? "–" : Average.ToString("0.0")) <span class="text-[0.85rem] font-medium text-[#7a6f91]">/ 5</span>
+                    </p>
+                </div>
+                <p class="text-[0.8rem] text-[#7a6f91]">@reviews.Count review@(reviews.Count == 1 ? "" : "s")</p>
+            </div>
+
+            <div class="my-5 space-y-1.5">
+                @foreach (var star in Enumerable.Range(1, 5).Reverse())
+                {
+                    var count = reviews.Count(r => r.Rating == star);
+                    var pct = reviews.Count == 0 ? 0 : count * 100 / reviews.Count;
+                    <div class="flex items-center gap-3 text-[0.75rem] text-[#7a6f91]">
+                        <span class="w-8">@star star</span>
+                        <div class="h-2 flex-1 overflow-hidden rounded-full bg-[#e9e6ee]">
+                            <div class="h-full rounded-full bg-[#e8794f]" style="width: @pct%"></div>
+                        </div>
+                        <span class="w-6 text-right">@count</span>
+                    </div>
+                }
+            </div>
+
+            @if (reviews.Count == 0)
+            {
+                <p class="py-10 text-center text-[0.88rem] text-[#8a7f9c]">
+                    No reviews yet. Post the first one.
+                </p>
+            }
+            else
+            {
+                <ul class="divide-y divide-[#eae7ee]">
+                    @foreach (var review in reviews)
+                    {
+                        <li class="py-5">
+                            <div class="flex items-center justify-between">
+                                <p class="text-[0.88rem] font-semibold text-[#16101d]">@review.Name</p>
+                                <p class="text-[0.72rem] text-[#8a7f9c]">@review.PostedAt.ToString("MMM d, h:mm tt")</p>
+                            </div>
+                            <div class="mt-1 flex gap-0.5" aria-label="@review.Rating out of 5 stars">
+                                @foreach (var star in Enumerable.Range(1, 5))
+                                {
+                                    <svg width="14" height="14" viewBox="0 0 24 24"
+                                         class="@(star <= review.Rating ? "fill-[#e8794f] stroke-[#e8794f]" : "fill-transparent stroke-[#c9c3d3]")"
+                                         stroke-width="1.5" stroke-linejoin="round">
+                                        <path d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95L12 2.5z" />
+                                    </svg>
+                                }
+                            </div>
+                            <p class="mt-2 whitespace-pre-line text-[0.88rem] leading-relaxed text-[#4a4056]">@review.Comment</p>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private const string EyebrowClass = "mb-1.5 text-[0.68rem] uppercase tracking-[0.16em] text-[#7a6f91]";
+    private const string LabelClass = "mb-1.5 block text-[0.65rem] uppercase tracking-[0.1em] text-[#7a6f91]";
+    private const string InputClass = "w-full rounded-md border border-[#dad5e1] bg-[#e9e6ee] px-3.5 py-[11px] text-[0.88rem] text-[#16101d] placeholder:text-[#a49cb0] focus:border-[#8f7fb3] focus:outline-none";
+    private const int MaxComment = 500;
+
+    private static readonly string[] RatingLabels = { "Select a rating", "Poor", "Fair", "Good", "Very good", "Excellent" };
+
+    private record Review(string Name, int Rating, string Comment, DateTime PostedAt);
+
+    private readonly List<Review> reviews = new();
+
+    private int rating;
+    private int hoverRating;
+    private string name = string.Empty;
+    private string comment = string.Empty;
+    private string? errorMessage;
+    private bool submitted;
+
+    private int DisplayedRating => hoverRating > 0 ? hoverRating : rating;
+    private string RatingLabel => RatingLabels[DisplayedRating];
+    private double Average => reviews.Count == 0 ? 0 : reviews.Average(r => r.Rating);
+
+    protected override void OnInitialized()
+    {
+        if (AppState.CurrentUser is null || !AppState.CurrentUser.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private void SetRating(int value)
+    {
+        rating = value;
+        errorMessage = null;
+        submitted = false;
+    }
+
+    private void SubmitReview()
+    {
+        submitted = false;
+
+        if (rating == 0)
+        {
+            errorMessage = "Choose a star rating before posting.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            errorMessage = "Write a comment before posting.";
+            return;
+        }
+
+        var author = string.IsNullOrWhiteSpace(name) ? "Anonymous" : name.Trim();
+        reviews.Insert(0, new Review(author, rating, comment.Trim(), DateTime.Now));
+
+        rating = 0;
+        hoverRating = 0;
+        name = string.Empty;
+        comment = string.Empty;
+        errorMessage = null;
+        submitted = true;
+    }
+}
