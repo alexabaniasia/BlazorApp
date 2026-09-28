@@ -9,12 +9,12 @@ public class AppStateService
 
     public List<Expense> Expenses { get; } = new()
     {
-        new Expense("Flight to Tokyo", new DateOnly(2026, 9, 12), 842.00m),
-        new Expense("Hotel — 4 nights", new DateOnly(2026, 9, 13), 560.00m),
-        new Expense("Conference registration", new DateOnly(2026, 9, 14), 299.00m),
-        new Expense("Airport transfer", new DateOnly(2026, 9, 12), 48.50m),
-        new Expense("Team dinner", new DateOnly(2026, 9, 15), 214.00m),
-        new Expense("Museum tickets", new DateOnly(2026, 9, 16), 32.00m),
+        new Expense("Flight to Tokyo", new DateOnly(2026, 9, 12), 842.00m, "Transport"),
+        new Expense("Hotel — 4 nights", new DateOnly(2026, 9, 13), 560.00m, "Bills"),
+        new Expense("Conference registration", new DateOnly(2026, 9, 14), 299.00m, "Bills"),
+        new Expense("Airport transfer", new DateOnly(2026, 9, 12), 48.50m, "Transport"),
+        new Expense("Team dinner", new DateOnly(2026, 9, 15), 214.00m, "Food"),
+        new Expense("Museum tickets", new DateOnly(2026, 9, 16), 32.00m, "Other"),
     };
 
     public decimal Total => Expenses.Sum(e => e.Cost);
@@ -31,14 +31,14 @@ public class AppStateService
         NotifyStateChanged();
     }
 
-    public void AddExpense(string item, decimal cost)
+    public void AddExpense(string item, decimal cost, string category = "Other")
     {
         if (string.IsNullOrWhiteSpace(item) || cost <= 0)
         {
             return;
         }
 
-        Expenses.Add(new Expense(item.Trim(), DateOnly.FromDateTime(DateTime.Now), cost));
+        Expenses.Add(new Expense(item.Trim(), DateOnly.FromDateTime(DateTime.Now), cost, category));
         NotifyStateChanged();
     }
 

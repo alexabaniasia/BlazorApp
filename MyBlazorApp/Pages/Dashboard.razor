@@ -25,10 +25,19 @@
         </div>
     </header>
 
-    <section class="my-7 flex max-w-[720px] items-end gap-4">
-        <div class="flex flex-1 flex-col">
+    <section class="mt-7 flex max-w-[860px] flex-wrap items-end gap-4">
+        <div class="flex min-w-[180px] flex-1 flex-col">
             <label class="@LabelClass">Item</label>
             <input class="@InputClass" placeholder="e.g. Team lunch" @bind="newItem" @bind:event="oninput" />
+        </div>
+        <div class="flex flex-col">
+            <label class="@LabelClass">Category</label>
+            <select class="@InputClass" @bind="newCategory">
+                @foreach (var c in Categories)
+                {
+                    <option value="@c">@c</option>
+                }
+            </select>
         </div>
         <div class="flex flex-col">
             <label class="@LabelClass">Cost ($)</label>
@@ -40,33 +49,74 @@
         </button>
     </section>
 
+    <section class="mb-8 mt-6 flex max-w-[960px] flex-wrap items-end gap-4 border-y border-[#e1dee6] py-5">
+        <div class="flex min-w-[180px] flex-1 flex-col">
+            <label class="@LabelClass">Search</label>
+            <input class="@InputClass" placeholder="Search items" @bind="searchText" @bind:event="oninput" />
+        </div>
+        <div class="flex flex-col">
+            <label class="@LabelClass">Category</label>
+            <select class="@InputClass" @bind="filterCategory">
+                <option value="">All categories</option>
+                @foreach (var c in Categories)
+                {
+                    <option value="@c">@c</option>
+                }
+            </select>
+        </div>
+        <div class="flex flex-col">
+            <label class="@LabelClass">From</label>
+            <input class="@InputClass" type="date" @bind="dateFrom" />
+        </div>
+        <div class="flex flex-col">
+            <label class="@LabelClass">To</label>
+            <input class="@InputClass" type="date" @bind="dateTo" />
+        </div>
+        @if (HasFilters)
+        {
+            <button class="cursor-pointer rounded-md border border-[#c9c3d3] px-4 py-[11px] text-[0.72rem] uppercase tracking-[0.08em] text-[#4a4056] transition-colors hover:bg-[#ece9f0]"
+                    @onclick="ClearFilters">
+                Clear
+            </button>
+        }
+    </section>
+
     <div class="overflow-x-auto">
         <table class="w-full max-w-[960px] border-collapse">
             <thead>
                 <tr>
                     <th class="@ThClass">Item</th>
+                    <th class="@ThClass">Category</th>
                     <th class="@ThClass">Date</th>
                     <th class="@ThClass text-right">Cost</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var expense in AppState.Expenses)
+                @foreach (var expense in FilteredExpenses)
                 {
                     <tr>
                         <td class="border-b border-[#eae7ee] py-4 text-[0.88rem] font-semibold text-[#16101d]">@expense.Item</td>
+                        <td class="border-b border-[#eae7ee] py-4 text-[0.88rem] text-[#4a4056]">@expense.Category</td>
                         <td class="border-b border-[#eae7ee] py-4 text-[0.88rem] text-[#8a7f9c]">@expense.Date.ToString("MMM d")</td>
                         <td class="border-b border-[#eae7ee] py-4 text-right text-[0.88rem] font-semibold text-[#16101d]">@expense.Cost.ToString("$0.00")</td>
+                    </tr>
+                }
+                @if (!FilteredExpenses.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="py-10 text-center text-[0.88rem] text-[#8a7f9c]">
+                            No expenses match these filters. Clear them to see everything.
+                        </td>
                     </tr>
                 }
             </tbody>
             <tfoot>
                 <tr>
-                    <td class="border-t-2 border-[#16101d] pt-[18px] text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[#16101d]">
-                        Total — @AppState.Expenses.Count items
+                    <td colspan="3" class="border-t-2 border-[#16101d] pt-[18px] text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[#16101d]">
+                        Showing @FilteredExpenses.Count() of @AppState.Expenses.Count items
                     </td>
-                    <td class="border-t-2 border-[#16101d]"></td>
                     <td class="border-t-2 border-[#16101d] pt-[18px] text-right text-[1.15rem] font-bold text-[#e8794f]">
-                        @AppState.Total.ToString("$#,##0.00")
+                        @FilteredTotal.ToString("$#,##0.00")
                     </td>
                 </tr>
             </tfoot>
@@ -80,8 +130,28 @@
     private const string InputClass = "w-full rounded-md border border-[#dad5e1] bg-[#e9e6ee] px-3.5 py-[11px] text-[0.88rem] text-[#16101d] placeholder:text-[#a49cb0] focus:border-[#8f7fb3] focus:outline-none";
     private const string ThClass = "border-b border-[#d9d5e0] py-2.5 text-left text-[0.65rem] font-medium uppercase tracking-[0.1em] text-[#7a6f91]";
 
+    private static readonly string[] Categories = { "Food", "Transport", "Bills", "Shopping", "Other" };
+
     private string newItem = string.Empty;
     private string newCost = string.Empty;
+    private string newCategory = "Other";
+
+    private string searchText = string.Empty;
+    private string filterCategory = string.Empty;
+    private DateOnly? dateFrom;
+    private DateOnly? dateTo;
+
+    private IEnumerable<Expense> FilteredExpenses =>
+        AppState.Expenses.Where(e =>
+            (string.IsNullOrWhiteSpace(searchText) || e.Item.Contains(searchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(filterCategory) || e.Category == filterCategory) &&
+            (dateFrom is null || e.Date >= dateFrom) &&
+            (dateTo is null || e.Date <= dateTo));
+
+    private decimal FilteredTotal => FilteredExpenses.Sum(e => e.Cost);
+
+    private bool HasFilters =>
+        !string.IsNullOrWhiteSpace(searchText) || !string.IsNullOrEmpty(filterCategory) || dateFrom is not null || dateTo is not null;
 
     protected override void OnInitialized()
     {
@@ -93,15 +163,24 @@
         }
     }
 
+    private void ClearFilters()
+    {
+        searchText = string.Empty;
+        filterCategory = string.Empty;
+        dateFrom = null;
+        dateTo = null;
+    }
+
     private void AddExpense()
     {
         if (decimal.TryParse(newCost, out var cost))
         {
-            AppState.AddExpense(newItem, cost);
+            AppState.AddExpense(newItem, cost, newCategory);
         }
 
         newItem = string.Empty;
         newCost = string.Empty;
+        newCategory = "Other";
     }
 
     private void SignOut()
